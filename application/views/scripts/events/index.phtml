@@ -1,0 +1,45 @@
+<div class="controls">
+    <?= $tabs ?>
+    <div class="icinga-module module-monitoring">
+        <?= $this->partial('partials/object/host-header.phtml', 'monitoring', ['object' => $host]) ?>
+    </div>
+    <?= $eventtypeForm ?>
+    <?= $paginator ?>
+    <?= $autorefreshControl ?>
+</div>
+<div class="content">
+<?php if (empty($events)): ?>
+    <p><?= $this->translate('No events found.') ?></p>
+</div>
+<?php return; endif ?>
+    <table class="events-table table-row-selectable" data-base-target="_next">
+        <thead>
+        <tr>
+            <?php foreach (array_keys($fields) as $field): ?>
+            <th><?= $this->escape($field) ?></th>
+            <?php endforeach ?>
+        </tr>
+        </thead>
+        <tbody>
+	<?php foreach ($events as $event): ?>
+	    <?php $event = json_decode($event, true); ?>
+	    <?php if (array_key_exists('result', $event)) { $event = $event['result']; } ; ?>
+	    <?php if (! array_key_exists('lastrow', $event)) { ?>
+	    <tr href="<?= $documentsUri->with(array('index' => $event['index'], 'type' => $event['sourcetype'], 'id' => $event['_cd'])) ?>">
+	    <?php $fields = [ '_bkt', '_cd', '_indextime', '_raw', '_serial', '_sourcetype', '_time', 'host', 'index', 'linecount', 'source', 'sourcetype', 'splunk_server' ] ?>
+            <?php foreach ($fields as $getter):
+                $column = $event[$getter];
+		#$column = $getter($event['_raw']);
+                $ellipsis = $this->ellipsis($column, 100);
+                if ($column !== $ellipsis): ?>
+                <td title="<?= $this->escape($column) ?>"><?= $this->escape($ellipsis) ?></td>
+                <?php else: ?>
+                <td><?= $this->escape($column) ?></td>
+                <?php endif ?>
+	    <?php endforeach ?>
+            <?php } ?>
+            </tr>
+        <?php endforeach ?>
+        </tbody>
+    </table>
+</div>
